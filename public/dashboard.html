@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Rsvply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #07050f; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 32px 20px; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+    .logo { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #b200ff, #ff006e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .event-name { font-size: 24px; font-weight: 700; color: #fff; }
+    .event-meta { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+    .share-bar {
+      background: rgba(178,0,255,0.08); border: 1px solid rgba(178,0,255,0.2);
+      border-radius: 12px; padding: 14px 18px; margin-bottom: 28px;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .share-bar span { font-size: 13px; color: #94a3b8; }
+    .share-link { font-size: 13px; color: #b200ff; font-weight: 600; flex: 1; word-break: break-all; }
+    .copy-btn {
+      background: rgba(178,0,255,0.15); border: 1px solid rgba(178,0,255,0.3);
+      color: #b200ff; border-radius: 8px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { background: #b200ff; color: #fff; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 18px; text-align: center;
+    }
+    .stat-num { font-size: 32px; font-weight: 800; }
+    .stat-label { font-size: 11px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat.accepted .stat-num { color: #00ff88; }
+    .stat.declined .stat-num { color: #ff4444; }
+    .stat.total .stat-num { color: #b200ff; }
+    .stat.adults .stat-num { color: #00f5ff; }
+    .stat.kids .stat-num { color: #ff69b4; }
+
+    /* Table */
+    .table-wrap {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; overflow: hidden;
+    }
+    .table-header {
+      padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .table-header h3 { font-size: 15px; font-weight: 600; color: #fff; }
+    .search { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 13px; outline: none; width: 200px; }
+    .export-btn { background: rgba(255,0,110,0.1); border: 1px solid rgba(255,0,110,0.3); color: #ff006e; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .export-btn:hover { background: #ff006e; color: #fff; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px 16px; text-align: left; font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge.accepted { background: rgba(0,255,136,0.1); color: #00ff88; }
+    .badge.declined { background: rgba(255,68,68,0.1); color: #ff4444; }
+
+    .empty { text-align: center; padding: 48px; color: #334155; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">Rsvply</div>
+      <div class="event-name" id="event-name">Loading...</div>
+      <div class="event-meta" id="event-meta"></div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#475569;margin-bottom:4px">Live updates every 5s</div>
+      <div style="width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 8px #00ff88;margin-left:auto;animation:pulse 1.5s ease-in-out infinite"></div>
+    </div>
+  </div>
+
+  <div class="share-bar">
+    <span>📎 Invite link:</span>
+    <div class="share-link" id="invite-link"></div>
+    <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat total"><div class="stat-num" id="s-total">—</div><div class="stat-label">Total RSVPs</div></div>
+    <div class="stat accepted"><div class="stat-num" id="s-accepted">—</div><div class="stat-label">Accepted</div></div>
+    <div class="stat declined"><div class="stat-num" id="s-declined">—</div><div class="stat-label">Declined</div></div>
+    <div class="stat adults"><div class="stat-num" id="s-adults">—</div><div class="stat-label">Adults 🧑</div></div>
+    <div class="stat kids"><div class="stat-num" id="s-kids">—</div><div class="stat-label">Kids 👧</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h3>Guest List</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" class="search" id="search" placeholder="Search guests..." oninput="renderTable()" />
+        <button class="export-btn" onclick="exportCSV()">CSV Export</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Status</th><th>Adults</th><th>Kids</th><th>Food</th><th>Notes</th><th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <style>
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+
+  <script>
+    const eventId = window.location.pathname.split('/').pop();
+    let allRsvps = [];
+    const inviteUrl = `${window.location.origin}/invite/${eventId}`;
+
+    document.getElementById('invite-link').textContent = inviteUrl;
+
+    function copyLink() {
+      navigator.clipboard.writeText(inviteUrl);
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Link', 2000);
+    }
+
+    async function loadDashboard() {
+      const res = await fetch(`/api/dashboard/${eventId}`);
+      const event = await res.json();
+      allRsvps = event.rsvps || [];
+
+      document.getElementById('event-name').textContent = event.eventName;
+      document.getElementById('event-meta').textContent = `${new Date(event.date).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })} ${event.time ? '· ' + event.time : ''} · ${event.venue}`;
+
+      const accepted = allRsvps.filter(r => r.status === 'ACCEPTED');
+      const declined = allRsvps.filter(r => r.status === 'DECLINED');
+      document.getElementById('s-total').textContent = allRsvps.length;
+      document.getElementById('s-accepted').textContent = accepted.length;
+      document.getElementById('s-declined').textContent = declined.length;
+      document.getElementById('s-adults').textContent = accepted.reduce((s, r) => s + (parseInt(r.adults) || 0), 0) || '—';
+      document.getElementById('s-kids').textContent = accepted.reduce((s, r) => s + (parseInt(r.kids) || 0), 0) || '—';
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const filtered = allRsvps.filter(r => r.name?.toLowerCase().includes(search) || r.status?.toLowerCase().includes(search));
+      const tbody = document.getElementById('tbody');
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="7" class="empty">No RSVPs yet — share your invite link!</td></tr>`; return; }
+      tbody.innerHTML = filtered.map(r => `
+        <tr>
+          <td style="font-weight:600;color:#fff">${r.name || '—'}</td>
+          <td><span class="badge ${r.status?.toLowerCase()}">${r.status}</span></td>
+          <td style="color:#00f5ff">${r.adults || '—'}</td>
+          <td style="color:#ff69b4">${r.kids || '—'}</td>
+          <td style="color:#94a3b8">${r.food || '—'}</td>
+          <td style="color:#475569;font-size:12px">${r.notes || '—'}</td>
+          <td style="color:#334155;font-size:11px">${new Date(r.timestamp).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    function exportCSV() {
+      const csv = ['Name,Status,Adults,Kids,Food,Notes,Timestamp', ...allRsvps.map(r => `${r.name},${r.status},${r.adults||''},${r.kids||''},${r.food||''},${r.notes||''},${new Date(r.timestamp).toLocaleString()}`)].join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = `${eventId}-rsvps.csv`;
+      a.click();
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 5000);
+  </script>
+</body>
+</html>

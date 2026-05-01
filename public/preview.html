@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pick Your Style — Rsvply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #07050f; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 40px 20px; }
+
+    .header { text-align: center; margin-bottom: 48px; }
+    .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #b200ff, #ff006e, #00f5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+    .header h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .header p { color: #64748b; font-size: 14px; }
+
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto 40px;
+    }
+
+    .theme-card {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.08);
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .theme-card:hover { border-color: rgba(178,0,255,0.5); transform: translateY(-4px); }
+    .theme-card.selected { border-color: #b200ff; box-shadow: 0 0 30px rgba(178,0,255,0.3); }
+
+    .theme-preview {
+      height: 220px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; text-align: center;
+      position: relative;
+    }
+    .theme-emoji { font-size: 32px; margin-bottom: 12px; }
+    .theme-headline { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .theme-body { font-size: 12px; opacity: 0.7; line-height: 1.5; max-width: 220px; }
+
+    .theme-info {
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .theme-name { font-size: 14px; font-weight: 600; color: #fff; }
+    .theme-desc { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .select-btn {
+      background: rgba(178,0,255,0.15); border: 1px solid rgba(178,0,255,0.4);
+      color: #b200ff; border-radius: 8px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .select-btn:hover, .theme-card.selected .select-btn {
+      background: #b200ff; color: #fff;
+    }
+
+    .actions {
+      text-align: center; max-width: 400px; margin: 0 auto;
+    }
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #b200ff, #ff006e);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+      margin-bottom: 12px;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      width: 100%; padding: 12px;
+      background: transparent; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #94a3b8;
+      font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+
+    .event-summary {
+      max-width: 1100px; margin: 0 auto 32px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 16px 20px;
+      display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
+    }
+    .event-summary span { font-size: 13px; color: #64748b; }
+    .event-summary strong { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Rsvply</div>
+    <h1>Pick your invite style</h1>
+    <p>We generated 3 styles for your event. Pick one or generate more.</p>
+  </div>
+
+  <div class="event-summary" id="event-summary">Loading...</div>
+
+  <div class="themes-grid" id="themes-grid">
+    <div style="text-align:center;color:#64748b;grid-column:1/-1;padding:40px">Generating your invite styles...</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="select-btn" disabled>🚀 Use This Style</button>
+    <button class="btn-secondary" id="more-btn">🔄 Generate 3 More Styles</button>
+  </div>
+
+  <script>
+    const eventId = window.location.pathname.split('/').pop();
+    let selectedThemeId = null;
+    let allThemes = [];
+    let usedThemeIds = [];
+
+    async function loadPreview() {
+      const res = await fetch(`/api/event/${eventId}`);
+      const event = await res.json();
+
+      // Event summary bar
+      document.getElementById('event-summary').innerHTML = `
+        <span>📅 <strong>${new Date(event.date).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</strong></span>
+        <span>⏰ <strong>${event.time || 'TBD'}</strong></span>
+        <span>📍 <strong>${event.venue}</strong></span>
+        ${event.hostName ? `<span>👤 <strong>${event.hostName}</strong></span>` : ''}
+      `;
+
+      // Load themes
+      const themesRes = await fetch(`/api/themes/${eventId}`);
+      const data = await themesRes.json();
+      allThemes = data.themes;
+      renderThemes(allThemes);
+    }
+
+    function renderThemes(themes) {
+      const grid = document.getElementById('themes-grid');
+      grid.innerHTML = '';
+      themes.forEach(theme => {
+        const card = document.createElement('div');
+        card.className = 'theme-card';
+        card.dataset.id = theme.id;
+        card.innerHTML = `
+          <div class="theme-preview" style="background:${theme.palette.bg}; color:${theme.palette.text}">
+            <div class="theme-emoji">${theme.emoji[0]}</div>
+            <div class="theme-headline" style="color:${theme.palette.primary}">${theme.headline}</div>
+            <div class="theme-body">${theme.body.substring(0, 100)}...</div>
+          </div>
+          <div class="theme-info">
+            <div>
+              <div class="theme-name">${theme.name}</div>
+              <div class="theme-desc">${theme.description}</div>
+            </div>
+            <button class="select-btn">Select</button>
+          </div>
+        `;
+        card.addEventListener('click', () => selectTheme(theme.id, card));
+        grid.appendChild(card);
+      });
+    }
+
+    function selectTheme(themeId, card) {
+      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedThemeId = themeId;
+      document.getElementById('select-btn').disabled = false;
+    }
+
+    document.getElementById('select-btn').addEventListener('click', async () => {
+      if (!selectedThemeId) return;
+      const res = await fetch('/api/select-theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, themeId: selectedThemeId })
+      });
+      const data = await res.json();
+      window.location.href = `/success/${eventId}`;
+    });
+
+    document.getElementById('more-btn').addEventListener('click', async () => {
+      document.getElementById('more-btn').textContent = 'Generating...';
+      document.getElementById('more-btn').disabled = true;
+      const res = await fetch(`/api/themes/${eventId}?exclude=${selectedThemeId || ''}`);
+      const data = await res.json();
+      renderThemes(data.themes);
+      document.getElementById('more-btn').textContent = '🔄 Generate 3 More Styles';
+      document.getElementById('more-btn').disabled = false;
+    });
+
+    loadPreview();
+  </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rsvply — Beautiful Invites for Any Event</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #07050f; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(130,0,255,0.15) 0%, transparent 70%);
+    }
+
+    .logo {
+      font-size: 42px; font-weight: 800; letter-spacing: -1px;
+      background: linear-gradient(135deg, #b200ff, #ff006e, #00f5ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .tagline {
+      font-size: 16px; color: #94a3b8; margin-bottom: 48px; text-align: center;
+      max-width: 400px; line-height: 1.6;
+    }
+
+    /* Form card */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%; max-width: 560px;
+      backdrop-filter: blur(20px);
+    }
+    .card h2 {
+      font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #fff;
+    }
+    .card p { font-size: 13px; color: #64748b; margin-bottom: 28px; }
+
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .field input, .field textarea {
+      width: 100%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 12px 14px;
+      color: #fff; font-family: 'Inter', sans-serif; font-size: 14px;
+      outline: none; transition: border 0.2s;
+    }
+    .field input:focus, .field textarea:focus { border-color: rgba(178,0,255,0.5); }
+    .field textarea { resize: vertical; min-height: 90px; }
+    .field input::placeholder, .field textarea::placeholder { color: #475569; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #b200ff, #ff006e);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading { display: none; text-align: center; margin-top: 16px; color: #94a3b8; font-size: 13px; }
+    .loading.show { display: block; }
+
+    /* Examples */
+    .examples { margin-top: 48px; text-align: center; }
+    .examples p { font-size: 12px; color: #475569; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .chip {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 6px 14px; font-size: 12px; color: #94a3b8;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover { background: rgba(178,0,255,0.1); border-color: rgba(178,0,255,0.3); color: #fff; }
+
+    @media (max-width: 480px) {
+      .card { padding: 24px; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">Rsvply</div>
+    <p class="tagline">Describe your event — get 3 beautiful invite pages instantly. Any event, any culture, any occasion.</p>
+
+    <div class="card">
+      <h2>Create your invite</h2>
+      <p>Tell us about your event and we'll generate stunning invite pages in seconds.</p>
+
+      <form id="event-form">
+        <div class="field">
+          <label>Event Name *</label>
+          <input type="text" id="eventName" placeholder="e.g. Sofia's 5th Birthday, Satyanarayana Puja, Team Offsite" required />
+        </div>
+        <div class="field">
+          <label>Hosted by</label>
+          <input type="text" id="hostName" placeholder="e.g. The Cholleti Family, John & Sarah" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Date *</label>
+            <input type="date" id="date" required />
+          </div>
+          <div class="field">
+            <label>Time</label>
+            <input type="time" id="time" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Venue *</label>
+          <input type="text" id="venue" placeholder="e.g. 123 Main St, Concord NC or Zoom" required />
+        </div>
+        <div class="field">
+          <label>Tell us more (optional)</label>
+          <textarea id="description" placeholder="e.g. Dinosaur theme, kids party, vegetarian food only. Or: Traditional Telugu ceremony, family gathering..."></textarea>
+        </div>
+
+        <button type="submit" class="btn" id="generate-btn">✨ Generate My Invites</button>
+        <div class="loading" id="loading">Generating your invite styles...</div>
+      </form>
+    </div>
+
+    <div class="examples">
+      <p>Try an example</p>
+      <div class="chips">
+        <div class="chip" onclick="fillExample('dinosaur')">🦕 Dinosaur Birthday</div>
+        <div class="chip" onclick="fillExample('puja')">🪔 Satyanarayana Puja</div>
+        <div class="chip" onclick="fillExample('wedding')">💍 Bridal Shower</div>
+        <div class="chip" onclick="fillExample('soccer')">⚽ Soccer Party</div>
+        <div class="chip" onclick="fillExample('unicorn')">🦄 Unicorn Party</div>
+        <div class="chip" onclick="fillExample('corporate')">💼 Team Offsite</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const examples = {
+      dinosaur: { eventName: "Aryan's Dino Party", hostName: "The Sharma Family", description: "Dinosaur theme, turning 5, outdoor party, kids welcome" },
+      puja: { eventName: "Satyanarayana Puja", hostName: "Arun & Neeraja Cholleti", description: "Traditional Telugu puja, family gathering, vegetarian prasadam" },
+      wedding: { eventName: "Priya's Bridal Shower", hostName: "The Mehta Sisters", description: "Elegant garden party, bridal shower, close friends and family" },
+      soccer: { eventName: "Rahul's Soccer Bash", hostName: "The Kapoor Family", description: "Soccer theme, turning 8, outdoor games, sporty vibe" },
+      unicorn: { eventName: "Maya's Unicorn Party", hostName: "Sarah & Mike", description: "Unicorn and rainbow theme, turning 6, pink and purple, magical" },
+      corporate: { eventName: "Q2 Team Offsite", hostName: "Acme Inc.", description: "Team building, professional networking, casual and fun" }
+    };
+
+    function fillExample(key) {
+      const e = examples[key];
+      document.getElementById('eventName').value = e.eventName;
+      document.getElementById('hostName').value = e.hostName;
+      document.getElementById('description').value = e.description;
+      // Set a future date
+      const d = new Date(); d.setDate(d.getDate() + 30);
+      document.getElementById('date').value = d.toISOString().split('T')[0];
+      document.getElementById('time').value = '18:00';
+      document.getElementById('venue').value = '123 Main St, Your City';
+    }
+
+    document.getElementById('event-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('generate-btn');
+      const loading = document.getElementById('loading');
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+      loading.classList.add('show');
+
+      const body = {
+        eventName: document.getElementById('eventName').value,
+        hostName: document.getElementById('hostName').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        venue: document.getElementById('venue').value,
+        description: document.getElementById('description').value
+      };
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        window.location.href = `/preview/${data.eventId}`;
+      } catch (err) {
+        alert('Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.textContent = '✨ Generate My Invites';
+        loading.classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>
