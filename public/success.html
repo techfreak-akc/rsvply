@@ -47,6 +47,7 @@
     <div class="btns">
       <button class="btn btn-primary" onclick="copyLink()">📋 Copy Invite Link</button>
       <button class="btn btn-secondary" onclick="goToDashboard()">📊 View Dashboard</button>
+      <button class="btn btn-secondary" onclick="window.location.href='/my-events'">📋 My Events</button>
       <button class="btn btn-secondary" onclick="window.location.href='/'">✨ Create Another Invite</button>
     </div>
   </div>
@@ -66,6 +67,21 @@
     function goToDashboard() {
       window.location.href = `/dashboard/${eventId}`;
     }
+
+    // Save event to localStorage so it shows in My Events
+    async function saveToMyEvents() {
+      try {
+        const res = await fetch(`/api/dashboard/${eventId}`);
+        const event = await res.json();
+        const STORAGE_KEY = 'rsvply_events';
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if (!saved.find(e => e.eventId === eventId)) {
+          saved.unshift({ eventId, eventName: event.eventName, date: event.date, venue: event.venue, createdAt: new Date() });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        }
+      } catch {}
+    }
+    saveToMyEvents();
   </script>
 </body>
 </html>

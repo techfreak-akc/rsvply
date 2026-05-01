@@ -127,4 +127,9 @@ app.get('/success/:eventId', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'success.html'));
 });
 
+// My Events page
+app.get('/my-events', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'my-events.html'));
+});
+
 app.listen(PORT, () => console.log(`Rsvply running on port ${PORT}`));

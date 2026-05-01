@@ -103,13 +103,13 @@
     .field { margin-bottom: 16px; }
     .field label { display: block; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     .field input, .field select {
-      width: 100%; background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
-      padding: 12px 14px; color: #fff; font-family: 'Inter', sans-serif;
+      width: 100%; background: var(--input-bg, rgba(255,255,255,0.05));
+      border: 1px solid var(--input-border, rgba(255,255,255,0.1)); border-radius: 10px;
+      padding: 12px 14px; color: var(--text); font-family: 'Inter', sans-serif;
       font-size: 15px; outline: none; transition: border 0.2s;
     }
     .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--glow); }
-    .field select option { background: #1a0030; }
+    .field select option { background: var(--bg); }
 
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -228,12 +228,29 @@
       const event = await res.json();
       const theme = event.theme;
 
+      // Detect if light theme
+      const isLight = theme.palette.bg.startsWith('#fff') || theme.palette.bg.startsWith('#fdf') || theme.palette.bg.startsWith('#fdf') || theme.palette.bg > '#eeeeee';
+      const lightThemeIds = ['bright', 'pastel', 'sunny'];
+      const isLightTheme = lightThemeIds.includes(theme.id);
+
       // Apply CSS vars
       document.documentElement.style.setProperty('--primary', theme.palette.primary);
       document.documentElement.style.setProperty('--accent', theme.palette.accent || theme.palette.primary);
       document.documentElement.style.setProperty('--glow', theme.palette.glow || 'rgba(178,0,255,0.4)');
       document.documentElement.style.setProperty('--text', theme.palette.text || '#fff');
       document.documentElement.style.setProperty('--card', theme.palette.card || 'rgba(255,255,255,0.05)');
+      document.documentElement.style.setProperty('--bg', theme.palette.bg);
+
+      // Light theme adjustments
+      if (isLightTheme) {
+        document.documentElement.style.setProperty('--input-bg', 'rgba(0,0,0,0.04)');
+        document.documentElement.style.setProperty('--input-border', 'rgba(0,0,0,0.12)');
+        document.getElementById('bg-grid').style.backgroundImage =
+          'linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)';
+        document.querySelector('.scanlines').style.display = 'none';
+        document.querySelector('.powered').style.color = 'rgba(0,0,0,0.3)';
+        document.querySelector('.footer').style.color = 'rgba(0,0,0,0.3)';
+      }
 
       // Background
       document.body.style.background = theme.palette.bg;

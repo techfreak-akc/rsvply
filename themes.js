@@ -1,4 +1,43 @@
 module.exports = [
+  // ── LIGHT THEMES ──────────────────────────────────────────────────────────
+  {
+    id: 'bright',
+    name: '🌞 Bright & Cheerful',
+    description: 'Bold colors on white, fun and energetic',
+    emoji: ['🎉', '🌈', '⭐', '🎊', '🎈'],
+    floaters: ['🎈', '🌈', '⭐', '🎉', '🎊', '✨', '🎁', '🎀'],
+    keywords: ['birthday', 'kids', 'children', 'fun', 'party', 'school', 'celebration'],
+    palette: { bg: '#fffbf0', primary: '#ff006e', accent: '#ff8c00', glow: 'rgba(255,0,110,0.2)', text: '#1a0030', card: 'rgba(255,0,110,0.06)' },
+    gradient: 'radial-gradient(ellipse at 20% 20%, rgba(255,0,110,0.1) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(255,238,0,0.12) 0%, transparent 60%)',
+    generateHeadline: (e) => `🎉 ${e.eventName.toUpperCase()}`,
+    generateBody: (e) => `${e.hostName ? e.hostName + ' invites' : 'You\'re invited'} to celebrate ${e.eventName}! Come join us for an amazing time filled with fun, laughter, and great memories! 🎈`
+  },
+  {
+    id: 'pastel',
+    name: '🌸 Pastel Dream',
+    description: 'Soft pastels, sweet and whimsical',
+    emoji: ['🌸', '🦋', '🌺', '💐', '🌼'],
+    floaters: ['🌸', '🦋', '🌺', '💐', '🌼', '✨', '🎀', '🍬'],
+    keywords: ['baby shower', 'bridal', 'garden', 'spring', 'flowers', 'unicorn', 'princess', 'girl', 'cute', 'sweet'],
+    palette: { bg: '#fdf4ff', primary: '#c026d3', accent: '#db2777', glow: 'rgba(192,38,211,0.2)', text: '#3b0764', card: 'rgba(192,38,211,0.06)' },
+    gradient: 'radial-gradient(ellipse at 30% 20%, rgba(192,38,211,0.1) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(219,39,119,0.08) 0%, transparent 60%)',
+    generateHeadline: (e) => `🌸 ${e.eventName}`,
+    generateBody: (e) => `${e.hostName ? e.hostName + ' warmly invites you' : 'You\'re invited'} to the most beautiful ${e.eventName}. Come celebrate this special moment with us! 💐`
+  },
+  {
+    id: 'sunny',
+    name: '☀️ Warm & Golden',
+    description: 'Warm tones, cozy and inviting',
+    emoji: ['☀️', '🌻', '🪔', '🌺', '💛'],
+    floaters: ['☀️', '🌻', '🪔', '🌺', '💛', '🌸', '✨', '🙏'],
+    keywords: ['puja', 'pooja', 'diwali', 'eid', 'housewarming', 'thanksgiving', 'family', 'cultural', 'traditional', 'religious', 'ceremony'],
+    palette: { bg: '#fffbeb', primary: '#d97706', accent: '#dc2626', glow: 'rgba(217,119,6,0.2)', text: '#1c1917', card: 'rgba(217,119,6,0.07)' },
+    gradient: 'radial-gradient(ellipse at 50% 0%, rgba(217,119,6,0.15) 0%, transparent 60%), radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.08) 0%, transparent 60%)',
+    generateHeadline: (e) => `☀️ ${e.eventName}`,
+    generateBody: (e) => `${e.hostName ? e.hostName + ' warmly invites you' : 'You\'re warmly invited'} to ${e.eventName}. Your presence would mean the world to us. 🙏`
+  },
+
+  // ── DARK THEMES ───────────────────────────────────────────────────────────
   {
     id: 'playful',
     name: '🎨 Playful & Bright',

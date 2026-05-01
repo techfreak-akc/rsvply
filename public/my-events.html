@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Events — Rsvply</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #07050f; color: #e2e8f0; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 32px 20px; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+    .logo { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #b200ff, #ff006e, #00f5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .create-btn {
+      padding: 10px 20px; background: linear-gradient(135deg, #b200ff, #ff006e);
+      border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700;
+      cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.2s;
+    }
+    .create-btn:hover { opacity: 0.85; }
+
+    h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #475569; margin-bottom: 32px; }
+
+    /* Empty state */
+    .empty {
+      text-align: center; padding: 80px 20px;
+      background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08);
+      border-radius: 20px;
+    }
+    .empty-icon { font-size: 56px; margin-bottom: 16px; }
+    .empty h3 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .empty p { font-size: 14px; color: #475569; margin-bottom: 24px; }
+
+    /* Event cards grid */
+    .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+
+    .event-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; overflow: hidden; transition: border-color 0.2s, transform 0.2s;
+    }
+    .event-card:hover { border-color: rgba(178,0,255,0.3); transform: translateY(-2px); }
+
+    .card-header {
+      padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .card-event-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .card-meta { font-size: 12px; color: #475569; line-height: 1.6; }
+    .card-status {
+      font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .card-status.live { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+    .card-status.draft { background: rgba(255,255,255,0.05); color: #64748b; border: 1px solid rgba(255,255,255,0.08); }
+
+    /* Mini stats */
+    .card-stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 16px 20px; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .mini-stat { text-align: center; }
+    .mini-num { font-size: 22px; font-weight: 800; }
+    .mini-num.total { color: #b200ff; }
+    .mini-num.accepted { color: #00ff88; }
+    .mini-num.declined { color: #ff4444; }
+    .mini-label { font-size: 10px; color: #475569; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Card actions */
+    .card-actions { padding: 14px 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .action-btn {
+      flex: 1; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none;
+      display: inline-block; border: none; font-family: 'Inter', sans-serif;
+    }
+    .action-btn.primary { background: rgba(178,0,255,0.12); border: 1px solid rgba(178,0,255,0.3); color: #b200ff; }
+    .action-btn.primary:hover { background: #b200ff; color: #fff; }
+    .action-btn.secondary { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #64748b; }
+    .action-btn.secondary:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+    .action-btn.danger { background: rgba(255,68,68,0.06); border: 1px solid rgba(255,68,68,0.15); color: #ff4444; }
+    .action-btn.danger:hover { background: rgba(255,68,68,0.15); }
+
+    /* Copy toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1e1e2e; border: 1px solid rgba(0,255,136,0.3); border-radius: 10px;
+      padding: 12px 20px; font-size: 13px; color: #00ff88; transition: transform 0.3s;
+      z-index: 999;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+      .events-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo">Rsvply</div>
+    <a href="/" class="create-btn">+ Create New Event</a>
+  </div>
+
+  <h1>My Events</h1>
+  <p class="subtitle">All events you've created on this device</p>
+
+  <div id="content"></div>
+
+  <div class="toast" id="toast">✅ Link copied!</div>
+
+  <script>
+    const STORAGE_KEY = 'rsvply_events';
+
+    function getSavedEvents() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function removeEvent(eventId) {
+      const events = getSavedEvents().filter(e => e.eventId !== eventId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      renderPage();
+    }
+
+    function copyLink(eventId) {
+      const url = `${window.location.origin}/invite/${eventId}`;
+      navigator.clipboard.writeText(url);
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function showEmpty() {
+      document.getElementById('content').innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🎉</div>
+          <h3>No events yet</h3>
+          <p>Create your first event and it'll appear here</p>
+          <a href="/" class="create-btn">+ Create My First Event</a>
+        </div>
+      `;
+    }
+
+    async function renderPage() {
+      const saved = getSavedEvents();
+      if (!saved.length) { showEmpty(); return; }
+
+      // Fetch live RSVP data for each event
+      const events = await Promise.all(saved.map(async (s) => {
+        try {
+          const res = await fetch(`/api/dashboard/${s.eventId}`);
+          if (!res.ok) return { ...s, notFound: true };
+          return await res.json();
+        } catch { return { ...s, error: true }; }
+      }));
+
+      const grid = document.createElement('div');
+      grid.className = 'events-grid';
+
+      events.forEach(event => {
+        if (event.notFound || event.error) return;
+
+        const rsvps = event.rsvps || [];
+        const accepted = rsvps.filter(r => r.status === 'ACCEPTED');
+        const declined = rsvps.filter(r => r.status === 'DECLINED');
+        const isLive = !!event.selectedTheme;
+        const date = new Date(event.date + 'T12:00:00');
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div>
+              <div class="card-event-name">${event.eventName}</div>
+              <div class="card-meta">
+                📅 ${dateStr}<br>
+                ${event.time ? '⏰ ' + event.time + '<br>' : ''}
+                📍 ${event.venue}
+                ${event.hostName ? '<br>👤 ' + event.hostName : ''}
+              </div>
+            </div>
+            <span class="card-status ${isLive ? 'live' : 'draft'}">${isLive ? '● LIVE' : 'DRAFT'}</span>
+          </div>
+          <div class="card-stats">
+            <div class="mini-stat"><div class="mini-num total">${rsvps.length}</div><div class="mini-label">Total</div></div>
+            <div class="mini-stat"><div class="mini-num accepted">${accepted.length}</div><div class="mini-label">Accepted</div></div>
+            <div class="mini-stat"><div class="mini-num declined">${declined.length}</div><div class="mini-label">Declined</div></div>
+          </div>
+          <div class="card-actions">
+            <a href="/dashboard/${event.eventId}" class="action-btn primary">📊 Dashboard</a>
+            <button class="action-btn secondary" onclick="copyLink('${event.eventId}')">📋 Copy Link</button>
+            <button class="action-btn danger" onclick="removeEvent('${event.eventId}')">🗑</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById('content').innerHTML = '';
+      document.getElementById('content').appendChild(grid);
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
