@@ -143,10 +143,13 @@
         card.className = 'theme-card';
         card.dataset.id = theme.id;
         card.innerHTML = `
-          <div class="theme-preview" style="background:${theme.palette.bg}; color:${theme.palette.text}">
-            <div class="theme-emoji">${theme.emoji[0]}</div>
-            <div class="theme-headline" style="color:${theme.palette.primary}">${theme.headline}</div>
-            <div class="theme-body">${theme.body.substring(0, 100)}...</div>
+          <div class="theme-preview" style="background:${theme.palette.bg}; color:${theme.palette.text}; background-image:${theme.gradient || ''}">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:20px 20px;"></div>
+            <div style="position:relative;z-index:1;text-align:center">
+              <div class="theme-emoji" style="filter:drop-shadow(0 0 8px ${theme.palette.glow || theme.palette.primary})">${theme.emoji[0]}</div>
+              <div class="theme-headline" style="color:${theme.palette.primary};text-shadow:0 0 10px ${theme.palette.glow || theme.palette.primary}">${theme.headline}</div>
+              <div class="theme-body">${theme.body.substring(0, 80)}...</div>
+            </div>
           </div>
           <div class="theme-info">
             <div>
