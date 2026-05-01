@@ -29,30 +29,7 @@ function generateEventId() {
 }
 
 // ── THEME ENGINE ──────────────────────────────────────────────────────────────
-const themes = require('./themes');
-
-function generateThemes(eventData, exclude = []) {
-  const desc = (eventData.description + ' ' + eventData.eventName).toLowerCase();
-  const scored = themes
-    .filter(t => !exclude.includes(t.id))
-    .map(theme => ({
-      ...theme,
-      score: theme.keywords.filter(k => desc.includes(k)).length
-    }));
-
-  scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 3);
-
-  return top.map(t => ({
-    id: t.id,
-    name: t.name,
-    description: t.description,
-    palette: t.palette,
-    headline: t.generateHeadline(eventData),
-    body: t.generateBody(eventData),
-    emoji: t.emoji
-  }));
-}
+const { generateThemes } = require('./themeGenerator');
 
 // ── ROUTES ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +39,7 @@ app.get('/', (req, res) => {
 });
 
 // Generate themes from form submission
-app.post('/api/generate', (req, res) => {
+app.post('/api/generate', async (req, res) => {
   const { eventName, hostName, date, time, venue, description } = req.body;
   if (!eventName || !date || !venue) {
     return res.status(400).json({ error: 'Event name, date and venue are required' });
@@ -72,7 +49,7 @@ app.post('/api/generate', (req, res) => {
   const eventData = { eventId, eventName, hostName, date, time, venue, description, rsvps: [], createdAt: new Date() };
   saveEvent(eventId, eventData);
 
-  const generatedThemes = generateThemes(eventData);
+  const generatedThemes = await generateThemes(eventData);
   res.json({ eventId, themes: generatedThemes });
 });
 
@@ -95,10 +72,11 @@ app.get('/invite/:eventId', (req, res) => {
 });
 
 // Get event data for invite page
-app.get('/api/event/:eventId', (req, res) => {
+app.get('/api/event/:eventId', async (req, res) => {
   const event = loadEvent(req.params.eventId);
   if (!event) return res.status(404).json({ error: 'Not found' });
-  const theme = generateThemes(event).find(t => t.id === event.selectedTheme) || generateThemes(event)[0];
+  const allThemes = await generateThemes(event);
+  const theme = allThemes.find(t => t.id === event.selectedTheme) || allThemes[0];
   res.json({ ...event, theme });
 });
 
@@ -131,11 +109,11 @@ app.get('/api/dashboard/:eventId', (req, res) => {
 });
 
 // Get themes for an event (supports ?exclude= to skip already-seen themes)
-app.get('/api/themes/:eventId', (req, res) => {
+app.get('/api/themes/:eventId', async (req, res) => {
   const event = loadEvent(req.params.eventId);
   if (!event) return res.status(404).json({ error: 'Not found' });
   const exclude = (req.query.exclude || '').split(',').filter(Boolean);
-  const generated = generateThemes(event, exclude);
+  const generated = await generateThemes(event, exclude);
   res.json({ themes: generated });
 });
 
